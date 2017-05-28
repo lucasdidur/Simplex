@@ -32,22 +32,33 @@ public class Simplex
         formaPadrao();
         printFuncao();
 
-         int i = 1;
-         System.out.println("\nInteração " + i);
+        int i = 1;
+        System.out.println("\nIteração " + i);
+        System.out.println("");
+
+        System.out.println("Matriz Base");
+        printMatrix(problema.getMatrizBasicas());
+        System.out.println("");
+
         calculaXb();
         acharLambda();
 
         calculaCustoRelativo();
 
-       
         while (!checaParadaCusto())
         {
             calculaDirecaoSimplex();
             calculaCandidato();
             atualizaVariaveis();
-            
+
             i++;
-            System.out.println("\nInteracao " + i);
+            System.out.println("\nIteracao " + i);
+            System.out.println("");
+            
+            System.out.println("Matriz Base");
+            printMatrix(problema.getMatrizBasicas());
+            System.out.println("");
+
             calculaXb();
             acharLambda();
 
@@ -58,11 +69,10 @@ public class Simplex
     public void formaPadrao()
     {
         problema.setObjetivo("max");
-        problema.setFuncao(new Expressao(3d, 2d));
+        problema.setFuncao(new Expressao(2d, 5d));
 
-        problema.addRestricao(new Expressao(Tipo.MENOR_IGUAL, 18d, 2d, 1d));
-        problema.addRestricao(new Expressao(Tipo.MENOR_IGUAL, 42d, 2d, 3d));
-        problema.addRestricao(new Expressao(Tipo.MENOR_IGUAL, 24d, 3d, 1d));
+        problema.addRestricao(new Expressao(Tipo.MENOR_IGUAL, 600d, 3d, 10d));
+        problema.addRestricao(new Expressao(Tipo.MENOR_IGUAL, 162d, 1d, 2d));
 
         int posI = problema.getRestricoes().get(0).getValues().size();
         if (problema.getVBasica().isEmpty())
@@ -101,9 +111,9 @@ public class Simplex
     public void calculaXb()
     {
         xB = problema.getXb();
-        System.out.print("Xb = \t\t");
-        printMatrix(xB);
-
+        System.out.println("Valor Xb");
+        printMatrix2(xB);
+        System.out.println("");
     }
 
     /**
@@ -116,8 +126,9 @@ public class Simplex
         double[] b = problema.getCustosBasicas();
 
         lambda = Gauss.gauss(transposto, b);
-        System.out.print("Lambda = \t");
-        printMatrix(lambda);
+        System.out.println("Valor Lambda");
+        printMatrix2(lambda);
+        System.out.println("");
     }
 
     /**
@@ -125,6 +136,7 @@ public class Simplex
      */
     public void calculaCustoRelativo()
     {
+        System.out.println("");
         custos = new double[problema.vNBasica.size()];
         min = Double.MAX_VALUE;
 
@@ -132,6 +144,7 @@ public class Simplex
         for (int i = 0; i < problema.vNBasica.size(); i++)
         {
             int vb = problema.vNBasica.get(i);
+            
             custos[i] = problema.getCusto(vb) - (MatrixUtil.multiplicarVetores(lambda, problema.getColuna(vb)));
 
             // 2.3
@@ -145,6 +158,7 @@ public class Simplex
         }
 
         System.out.println("Candidata a sair da base: k=" + k);
+        System.out.println("");
     }
 
     /**
@@ -156,7 +170,6 @@ public class Simplex
 
         for (double custo : custos)
         {
-            System.out.println("Custo Relativo: " + custo);
             if (custo < 0)
             {
                 todosPositivos = false;
@@ -169,21 +182,26 @@ public class Simplex
 
             System.out.println("");
             System.out.println("Solução: ");
-            
+
             double[] xBFinal = new double[problema.getFuncao().size()];
-            double[]x = new double[problema.getFuncaoPadrao().size()];
-            
+            double[] x = new double[problema.getFuncaoPadrao().size()];
+
             for (int i = 0; i < problema.getVBasica().size(); i++)
             {
-                x[problema.getVBasica().get(i) -1] = xB[i];
+                x[problema.getVBasica().get(i) - 1] = xB[i];
             }
-            
+
             for (int i = 0; i < xBFinal.length; i++)
             {
                 xBFinal[i] = x[i];
             }
 
             double fx = MatrixUtil.multiplicarVetores(problema.getFuncao().getValueVector(), xBFinal);
+
+            if(problema.getObjetivo().equals("max"))
+            {
+                fx *= -1;
+            }
             
             System.out.println("f(x) = " + fx);
             printMatrix2(xBFinal);
@@ -201,10 +219,20 @@ public class Simplex
      */
     public void calculaDirecaoSimplex()
     {
-        y = Gauss.gauss(problema.getMatrizBasicas(), problema.getColuna(k));
+        System.out.println("");    
+        
+        System.out.println("Calculando y");
+        printMatrix(problema.getMatrizBasicas());
+        System.out.println("x");
+        printMatrix2(problema.getColuna(problema.getVNBasica().get(k-1)));
+        
+        
+        y = Gauss.gauss(problema.getMatrizBasicas(), problema.getColuna(problema.getVNBasica().get(k-1)));
 
-        System.out.print("y = \t\t");
-        printMatrix(y);
+        System.out.println("");
+        System.out.println("Valor do y");
+        printMatrix2(y);
+        System.out.println("");
     }
 
     /**
