@@ -137,7 +137,7 @@ public class Simplex
             // 2.3
             if (custos[i] < min)
             {
-                k = vb;
+                k = i + 1;
                 min = custos[i];
             }
 
@@ -235,7 +235,7 @@ public class Simplex
             }
         }
 
-        System.out.println("Menor e=" + e + " (" + emin + ") ");
+        System.out.println("Menor e = " + e + " (" + emin + ") ");
     }
 
     /**
